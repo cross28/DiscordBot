@@ -22,7 +22,7 @@ export default function ban(msg: Message, username: string, days?: number, reaso
 
   // Announcing to the channel the player has been banned
   msg.channel.send(`${bannedUser.displayName} has been banned for ${days ?? 1} days!`);
-  bannedUser.send(`An admin has decided to ban you for ${days ?? 1} days.`);
+  bannedUser.send(`An admin has decided to ban you for ${days ?? 1} day(s).`);
 
   // Banning the user
   bannedUser.ban({
