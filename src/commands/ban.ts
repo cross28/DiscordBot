@@ -29,4 +29,7 @@ export default function ban(msg: Message, username: string, days?: number, reaso
     reason: reason ?? 'An admin has decided to ban you for no reason.',
     days: days ?? 1,
   });
+
+  // Logging
+  console.log(`${msg.author.username} has banned ${bannedUser.displayName} for ${days ?? 1} because ${reason ?? 'no reason'}.`);
 }
