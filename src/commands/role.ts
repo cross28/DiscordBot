@@ -18,6 +18,9 @@ export default function role(msg: Message, username: string, roleName: string): 
   // Assigning the user to the role
   user.roles.add(roleToAssign.id);
 
+  // Notifying the channel
+  msg.channel.send(`${user.displayName} has been assigned the ${roleToAssign.name} role.`);
+
   // Logging
   console.log(`${msg.author.username} has assigned ${user.displayName} to the ${roleToAssign.name} role.`);
 }
