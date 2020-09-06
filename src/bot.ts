@@ -1,12 +1,16 @@
 import { Client, Message } from 'discord.js';
+import dotenv from 'dotenv';
 import mute from './commands/mute';
 import kick from './commands/kick';
 import ban from './commands/ban';
 import unban from './commands/unban';
 
+// Configuring env. variables
+dotenv.config();
+
 const bot: Client = new Client();
 
-const token = '';
+const token: string | undefined = process.env.BOT_TOKEN;
 const prefix = '!ry';
 
 bot.on('ready', () => {
@@ -69,4 +73,7 @@ bot.on('message', (msg: Message) => {
   }
 });
 
-bot.login(token);
+bot.login(token)
+  .catch((err) => {
+    console.log(err);
+  });
