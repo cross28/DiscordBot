@@ -1,11 +1,12 @@
 import { Client, Message } from 'discord.js';
 import dotenv from 'dotenv';
 import addrole from './commands/addrole';
-import mute from './commands/mute';
-import kick from './commands/kick';
 import ban from './commands/ban';
-import unban from './commands/unban';
+import delrole from './commands/delrole';
+import kick from './commands/kick';
+import mute from './commands/mute';
 import role from './commands/role';
+import unban from './commands/unban';
 
 // Configuring env. variables
 dotenv.config();
@@ -61,6 +62,14 @@ bot.on('message', (msg: Message) => {
       const roleName: string = args[2];
       const color: string = args[3];
       addrole(msg, roleName, color);
+      break;
+    }
+
+    // Deletes a role
+    case 'delrole': {
+      const username: string = args[2];
+      const roleName: string = args[3];
+      delrole(msg, username, roleName);
       break;
     }
 

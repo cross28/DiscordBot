@@ -3,7 +3,7 @@ import { Message } from 'discord.js';
 export default function addrole(msg: Message, roleName: string, color?: string): void {
   // Seeing if the role exists
   const role = msg.guild?.roles.cache.find((role_) => role_.name === roleName);
-  if (!role) {
+  if (role) {
     msg.channel.send('That role already exists.');
     return;
   }
