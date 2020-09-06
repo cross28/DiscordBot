@@ -1,9 +1,11 @@
 import { Client, Message } from 'discord.js';
 import dotenv from 'dotenv';
+import addrole from './commands/addrole';
 import mute from './commands/mute';
 import kick from './commands/kick';
 import ban from './commands/ban';
 import unban from './commands/unban';
+import role from './commands/role';
 
 // Configuring env. variables
 dotenv.config();
@@ -48,10 +50,6 @@ bot.on('message', (msg: Message) => {
       break;
     }
 
-    case 'softban':
-      if (!args[2]) msg.channel.send('A username must be entered. <!ry softban _username_>');
-      break;
-
     case 'kick': {
       const username: string = args[2];
       kick(msg, username);
@@ -59,13 +57,20 @@ bot.on('message', (msg: Message) => {
     }
 
     // Creates a role
-    case 'addrole':
-
+    case 'addrole': {
+      const roleName: string = args[2];
+      const color: string = args[3];
+      addrole(msg, roleName, color);
       break;
+    }
+
     // Gives a member on the server an already existing role
-    case 'role':
-
+    case 'role': {
+      const username: string = args[2];
+      const roleName: string = args[3];
+      role(msg, username, roleName);
       break;
+    }
 
     default:
       msg.channel.send(`${msg.member?.nickname}? More like dumbass, mothafucka does that look like a command to you?`);
@@ -75,5 +80,5 @@ bot.on('message', (msg: Message) => {
 
 bot.login(token)
   .catch((err) => {
-    console.log(err);
+    console.log(`An error has occured: ${err}`);
   });
