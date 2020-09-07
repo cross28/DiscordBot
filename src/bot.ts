@@ -1,12 +1,8 @@
 import { Client, Message } from 'discord.js';
 import dotenv from 'dotenv';
-import addrole from './commands/addrole';
-import ban from './commands/ban';
-import delrole from './commands/delrole';
-import kick from './commands/kick';
-import mute from './commands/mute';
-import role from './commands/role';
-import unban from './commands/unban';
+import {
+  addrole, ban, delrole, kick, mute, role, unban,
+} from './commands';
 
 // Configuring env. variables
 dotenv.config();
