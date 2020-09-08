@@ -1,15 +1,12 @@
 import { Client, Message } from 'discord.js';
-import dotenv from 'dotenv';
+import { BOT_TOKEN } from './config';
 import {
   addrole, ban, delrole, kick, mute, role, unban,
 } from './commands';
-
-// Configuring env. variables
-dotenv.config();
+import { createUser, updateCurrency } from './db-helper';
 
 const bot: Client = new Client();
 
-const token: string | undefined = process.env.BOT_TOKEN;
 const prefix = '!ry';
 
 bot.on('ready', () => {
@@ -17,9 +14,16 @@ bot.on('ready', () => {
 });
 
 // Commands
-bot.on('message', (msg: Message) => {
+bot.on('message', async (msg: Message) => {
   // If a member on the server sends a message that doesn't start with our prefix
   if (!msg.content.startsWith(prefix)) return;
+
+  try {
+    // Attempting to create the user if the user doesn't exist in the database
+    createUser(msg.author.id, msg.author.username);
+  } catch (err) {
+    console.log(err);
+  }
 
   // Splits the message into respective arguments
   const args: string[] = msg.content.substring(prefix.length).split(' ');
@@ -28,6 +32,7 @@ bot.on('message', (msg: Message) => {
     case 'mute': {
       const mutedUser: string = args[2];
       const time: string = args[3];
+      await updateCurrency(msg.author.id, 1);
       mute(msg, mutedUser, time);
       break;
     }
@@ -36,13 +41,15 @@ bot.on('message', (msg: Message) => {
       const username: string = args[2];
       const days: number = Number.parseInt(args[3], 10);
       let reason = '';
-      for (let i = 4; i < args.length; i += 1) reason += args[i];
+      for (let i = 4; i < args.length; i += 1) reason += `${args[i]} `;
+      console.log(reason);
       ban(msg, username, days, reason);
       break;
     }
 
     case 'unban': {
       const username: string = args[2];
+      await updateCurrency(msg.author.id, 1);
       unban(msg, username);
       break;
     }
@@ -83,7 +90,7 @@ bot.on('message', (msg: Message) => {
   }
 });
 
-bot.login(token)
+bot.login(BOT_TOKEN)
   .catch((err) => {
     console.log(`An error has occured: ${err}`);
   });
