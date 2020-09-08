@@ -52,3 +52,14 @@ export async function updateCurrency(userId: string, amountToAppend: number): Pr
     console.log(doc);
   }).exec();
 }
+
+// Get user currency
+export async function getCurrency(userId: string): Promise<number> {
+  // Finding the user
+  const user = await User.findOne({ userId }).exec().then((doc) => doc);
+
+  // If the user isn't found or doesn't exist
+  if (!user) return 0;
+
+  return user.currency;
+}

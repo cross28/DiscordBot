@@ -3,7 +3,7 @@ import { BOT_TOKEN } from './config';
 import {
   addrole, ban, delrole, kick, mute, role, unban,
 } from './commands';
-import { createUser, updateCurrency } from './db-helper';
+import { createUser, updateCurrency, getCurrency } from './db-helper';
 
 const bot: Client = new Client();
 
@@ -42,7 +42,7 @@ bot.on('message', async (msg: Message) => {
       const days: number = Number.parseInt(args[3], 10);
       let reason = '';
       for (let i = 4; i < args.length; i += 1) reason += `${args[i]} `;
-      console.log(reason);
+      await updateCurrency(msg.author.id, reason.length ?? 1);
       ban(msg, username, days, reason);
       break;
     }
@@ -56,6 +56,7 @@ bot.on('message', async (msg: Message) => {
 
     case 'kick': {
       const username: string = args[2];
+      await updateCurrency(msg.author.id, 1);
       kick(msg, username);
       break;
     }
@@ -64,6 +65,7 @@ bot.on('message', async (msg: Message) => {
     case 'addrole': {
       const roleName: string = args[2];
       const color: string = args[3];
+      await updateCurrency(msg.author.id, 1);
       addrole(msg, roleName, color);
       break;
     }
@@ -72,6 +74,7 @@ bot.on('message', async (msg: Message) => {
     case 'delrole': {
       const username: string = args[2];
       const roleName: string = args[3];
+      await updateCurrency(msg.author.id, 1);
       delrole(msg, username, roleName);
       break;
     }
@@ -80,7 +83,15 @@ bot.on('message', async (msg: Message) => {
     case 'role': {
       const username: string = args[2];
       const roleName: string = args[3];
+      await updateCurrency(msg.author.id, 1);
       role(msg, username, roleName);
+      break;
+    }
+
+    // Getting the authors currency
+    case 'getmoney': {
+      const currency: number = await getCurrency(msg.author.id);
+      msg.channel.send(`${msg.author.username}'s wallet: ${currency}`);
       break;
     }
 
