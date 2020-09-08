@@ -1,4 +1,4 @@
-import { Client, Message, VoiceChannel, VoiceConnection } from 'discord.js';
+import { Client, Message, VoiceChannel, VoiceConnection, GuildMember, PartialGuildMember, Role } from 'discord.js';
 import { BOT_TOKEN } from './config';
 import { addrole, ban, delrole, kick, mute, role, unban } from './commands';
 import { createUser, updateCurrency, getCurrency } from './database';
@@ -10,6 +10,21 @@ const prefix = '!ry';
 try {
   bot.on('ready', () => {
     console.log('This bot is online');
+  });
+
+  // When a new member joins the server, make them the member role
+  bot.on('guildMemberAdd', (member: GuildMember | PartialGuildMember) => {
+    let memberrole = member.guild.roles.cache.find((role_: Role) => role_.name === 'member');
+    const muterole = member.guild.roles.cache.find((role_: Role) => role_.name === 'muted');
+
+    // Creating the member and mute role if they don't exist
+    if (!memberrole || !muterole) {
+      member.guild.roles.create({ data: { name: 'muted', color: 'a8102f' } });
+      member.guild.roles.create({ data: { name: 'member', color: '018af2' } });
+      memberrole = member.guild.roles.cache.find((role_:Role) => role_.name === 'member');
+    }
+
+    member.roles.add(memberrole ? memberrole.id : 'member');
   });
 
   // Commands
