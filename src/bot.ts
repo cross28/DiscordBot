@@ -1,79 +1,157 @@
-import { Client, Message } from 'discord.js';
-import dotenv from 'dotenv';
-import mute from './commands/mute';
-import kick from './commands/kick';
-import ban from './commands/ban';
-import unban from './commands/unban';
-
-// Configuring env. variables
-dotenv.config();
+import { Client, Message, VoiceChannel, VoiceConnection, GuildMember, PartialGuildMember, Role } from 'discord.js';
+import { BOT_TOKEN } from './config';
+import { addrole, ban, delrole, kick, mute, role, unban } from './commands';
+import { createUser, updateCurrency, getCurrency } from './database';
+import play from './audio/audio-stream-helper';
 
 const bot: Client = new Client();
 
-const token: string | undefined = process.env.BOT_TOKEN;
 const prefix = '!ry';
+try {
+  bot.on('ready', () => {
+    console.log('This bot is online');
+  });
 
-bot.on('ready', () => {
-  console.log('This bot is online');
-});
+  // When a new member joins the server, make them the member role
+  bot.on('guildMemberAdd', (member: GuildMember | PartialGuildMember) => {
+    let memberrole = member.guild.roles.cache.find((role_: Role) => role_.name === 'member');
+    const muterole = member.guild.roles.cache.find((role_: Role) => role_.name === 'muted');
 
-// Commands
-bot.on('message', (msg: Message) => {
+    // Creating the member and mute role if they don't exist
+    if (!memberrole || !muterole) {
+      member.guild.roles.create({ data: { name: 'muted', color: 'a8102f' } });
+      member.guild.roles.create({ data: { name: 'member', color: '018af2' } });
+      memberrole = member.guild.roles.cache.find((role_:Role) => role_.name === 'member');
+    }
+
+    member.roles.add(memberrole ? memberrole.id : 'member');
+  });
+
+  // Commands
+  bot.on('message', async (msg: Message) => {
   // If a member on the server sends a message that doesn't start with our prefix
-  if (!msg.content.startsWith(prefix)) return;
+    if (!msg.content.startsWith(prefix)) return;
 
-  // Splits the message into respective arguments
-  const args: string[] = msg.content.substring(prefix.length).split(' ');
-
-  switch (args[1]) {
-    case 'mute': {
-      const mutedUser: string = args[2];
-      const time: string = args[3];
-      mute(msg, mutedUser, time);
-      break;
+    try {
+    // Attempting to create the user if the user doesn't exist in the database
+      createUser(msg.author.id, msg.author.username);
+    } catch (err) {
+      console.log(err);
     }
 
-    case 'ban': {
-      const username: string = args[2];
-      const days: number = Number.parseInt(args[3], 10);
-      let reason = '';
-      for (let i = 4; i < args.length; i += 1) reason += args[i];
-      ban(msg, username, days, reason);
-      break;
+    // Splits the message into respective arguments
+    const args: string[] = msg.content.substring(prefix.length).split(' ');
+
+    switch (args[1]) {
+      case 'mute': {
+        const mutedUser: string = args[2];
+        const time: string = args[3];
+        await updateCurrency(msg.author.id, 1);
+        mute(msg, mutedUser, time);
+        break;
+      }
+
+      case 'ban': {
+        const username: string = args[2];
+        const days: number = Number.parseInt(args[3], 10);
+        let reason = '';
+        for (let i = 4; i < args.length; i += 1) reason += `${args[i]} `;
+        await updateCurrency(msg.author.id, reason.length ?? 1);
+        ban(msg, username, days, reason);
+        break;
+      }
+
+      case 'unban': {
+        const username: string = args[2];
+        await updateCurrency(msg.author.id, 1);
+        unban(msg, username);
+        break;
+      }
+
+      case 'kick': {
+        const username: string = args[2];
+        await updateCurrency(msg.author.id, 1);
+        kick(msg, username);
+        break;
+      }
+
+      // Creates a role
+      case 'addrole': {
+        const roleName: string = args[2];
+        const color: string = args[3];
+        await updateCurrency(msg.author.id, 1);
+        addrole(msg, roleName, color);
+        break;
+      }
+
+      // Deletes a role
+      case 'delrole': {
+        const username: string = args[2];
+        const roleName: string = args[3];
+        await updateCurrency(msg.author.id, 1);
+        delrole(msg, username, roleName);
+        break;
+      }
+
+      // Gives a member on the server an already existing role
+      case 'role': {
+        const username: string = args[2];
+        const roleName: string = args[3];
+        await updateCurrency(msg.author.id, 1);
+        role(msg, username, roleName);
+        break;
+      }
+
+      // Getting the authors currency
+      case 'getmoney': {
+        const currency: number = await getCurrency(msg.author.id);
+        msg.channel.send(`${msg.author.username}'s wallet: ${currency}`);
+        break;
+      }
+
+      // Stream Twitch audio to voice channel
+      case 'play': {
+        const url: string = args[2];
+        const voiceChannel: VoiceChannel | null | undefined = msg.member?.voice.channel;
+
+        // Seeing if the requester is in a voice channel
+        if (!voiceChannel) {
+          msg.channel.send('You must be in a voice channel.');
+          return;
+        }
+
+        // Joining the voice channel
+        await voiceChannel.join().then((con) => {
+          play(con, url);
+        }).catch((err) => {
+          console.log(err);
+          voiceChannel.leave();
+        });
+
+        break;
+      }
+
+      case 'stop': {
+      // If the bot is in the voice channel
+        const voiceChannel: VoiceChannel | null | undefined = msg.guild?.me?.voice.channel;
+        if (!voiceChannel) return;
+
+        // Disconnect from the voice channel to stop the audio
+        voiceChannel.join().then((con: VoiceConnection) => con.disconnect());
+
+        break;
+      }
+
+      default:
+        msg.channel.send('That is not a command. Try again.');
+        break;
     }
+  });
+} catch (err) {
+  console.log(err);
+}
 
-    case 'unban': {
-      const username: string = args[2];
-      unban(msg, username);
-      break;
-    }
-
-    case 'softban':
-      if (!args[2]) msg.channel.send('A username must be entered. <!ry softban _username_>');
-      break;
-
-    case 'kick': {
-      const username: string = args[2];
-      kick(msg, username);
-      break;
-    }
-
-    // Creates a role
-    case 'addrole':
-
-      break;
-    // Gives a member on the server an already existing role
-    case 'role':
-
-      break;
-
-    default:
-      msg.channel.send(`${msg.member?.nickname}? More like dumbass, mothafucka does that look like a command to you?`);
-      break;
-  }
-});
-
-bot.login(token)
+bot.login(BOT_TOKEN)
   .catch((err) => {
-    console.log(err);
+    console.log(`An error has occured: ${err}`);
   });

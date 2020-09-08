@@ -22,11 +22,14 @@ export default function ban(msg: Message, username: string, days?: number, reaso
 
   // Announcing to the channel the player has been banned
   msg.channel.send(`${bannedUser.displayName} has been banned for ${days ?? 1} days!`);
-  bannedUser.send(`An admin has decided to ban you for ${days ?? 1} days.`);
+  bannedUser.send(`An admin has decided to ban you for ${days ?? 1} day(s).`);
 
   // Banning the user
   bannedUser.ban({
     reason: reason ?? 'An admin has decided to ban you for no reason.',
     days: days ?? 1,
   });
+
+  // Logging
+  console.log(`${msg.author.username} has banned ${bannedUser.displayName} for ${days ?? 1} because ${reason ?? 'no reason'}.`);
 }

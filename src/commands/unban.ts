@@ -4,7 +4,6 @@ export default function unban(msg: Message, username: string): void {
   // Going through the list of banned players on the server
   msg.guild?.fetchBans()
     .then((bans) => {
-      console.log(bans);
       if (bans.size === 0) return;
 
       // Finding the banned user
@@ -24,6 +23,6 @@ export default function unban(msg: Message, username: string): void {
       console.log(`${bannedUser.username} has been unbanned from ${msg.channel.toString()} by ${msg.author.username}.`);
     })
     .catch((err) => {
-      console.log(err);
+      console.log(`An error has occured: ${err}`);
     });
 }
