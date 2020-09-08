@@ -3,7 +3,7 @@ import { BOT_TOKEN } from './config';
 import {
   addrole, ban, delrole, kick, mute, role, unban,
 } from './commands';
-import { createUser, updateCurrency, getCurrency } from './db-helper';
+import { createUser, updateCurrency, getCurrency } from './database';
 
 const bot: Client = new Client();
 

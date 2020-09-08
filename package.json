@@ -22,7 +22,8 @@
     "ms": "^2.1.2",
     "nodemon": "^2.0.4",
     "typescript": "^4.0.2",
-    "typescript-tslint-plugin": "^0.5.5"
+    "typescript-tslint-plugin": "^0.5.5",
+    "ytdl-core": "^3.2.2"
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^4.0.1",

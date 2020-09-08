@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
-import { DB_URL } from './config';
-import { User, IUser } from './models/user';
+import { DB_URL } from '../config';
+import { User, IUser } from '../models/user';
 
 if (!DB_URL) throw new Error('DB_URL does not exist.');
 
@@ -11,9 +11,6 @@ mongoose.connect(DB_URL, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 });
-
-// Create a MongoClient
-// const client: MongoClient = new MongoClient(DB_URL);
 
 // Create a user in the database
 export function createUser(userId: string, username: string): boolean {
